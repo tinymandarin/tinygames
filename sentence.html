@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chinese Character Sentence Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        #setup-area, #game-area, #sentence-box {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+        #sentence-input {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        #game-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        #sentence-box {
+            min-height: 100px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 10px;
+            background-color: white;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .card {
+            width: 60px;
+            height: 60px;
+            background-color: #4CAF50;
+            border: 2px solid #45a049;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            margin: 5px;
+            cursor: move;
+            user-select: none;
+        }
+        button {
+            margin-top: 10px;
+            font-size: 18px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        select {
+            margin-top: 10px;
+            font-size: 18px;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chinese Character Sentence Game</h1>
+    <div id="setup-area">
+        <input type="text" id="sentence-input" placeholder="Enter a Chinese sentence or leave blank for random">
+        <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+        <button id="start-game">Start Game</button>
+    </div>
+    <div id="sentence-box"></div>
+    <div id="game-area"></div>
+    <button id="check-button" style="display: none;">Check Sentence</button>
+
+    <script>
+        const sentences = {
+            easy: [
+                "我喜欢吃苹果",
+                "今天天气很好",
+                "你好吗",
+                "我是中国人"
+            ],
+            medium: [
+                "学习汉语很有趣",
+                "我每天都看中文电影",
+                "你最喜欢哪个季节",
+                "我们一起去公园吧"
+            ],
+            hard: [
+                "生活就像一盒巧克力",
+                "眼睛是心灵的窗户",
+                "千里之行始于足下",
+                "时间就是金钱朋友"
+            ]
+        };
+
+        let correctSentence = '';
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function createCards() {
+            const gameArea = document.getElementById('game-area');
+            gameArea.innerHTML = '';
+            const characters = correctSentence.split('');
+            shuffleArray(characters);
+            characters.forEach(char => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.textContent = char;
+                card.draggable = true;
+                card.addEventListener('dragstart', dragStart);
+                gameArea.appendChild(card);
+            });
+        }
+
+        function dragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.id);
+        }
+
+        function allowDrop(e) {
+            e.preventDefault();
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            const data = e.dataTransfer.getData('text');
+            const draggedElement = document.getElementById(data);
+            if (e.target.className === 'card') {
+                e.target.parentNode.insertBefore(draggedElement, e.target.nextSibling);
+            } else {
+                e.target.appendChild(draggedElement);
+            }
+        }
+
+        function checkSentence() {
+            const sentenceBox = document.getElementById('sentence-box');
+            const userSentence = Array.from(sentenceBox.children).map(card => card.textContent).join('');
+            if (userSentence === correctSentence) {
+                alert('恭喜你！句子正确！');
+            } else {
+                alert('再试一次。正确的句子是：' + correctSentence);
+            }
+        }
+
+        function startGame() {
+            const input = document.getElementById('sentence-input').value.trim();
+            const difficulty = document.getElementById('difficulty').value;
+            
+            if (input) {
+                correctSentence = input;
+            } else {
+                correctSentence = sentences[difficulty][Math.floor(Math.random() * sentences[difficulty].length)];
+            }
+            
+            createCards();
+            document.getElementById('sentence-box').innerHTML = '';
+            document.getElementById('setup-area').style.display = 'none';
+            document.getElementById('sentence-box').style.display = 'flex';
+            document.getElementById('game-area').style.display = 'flex';
+            document.getElementById('check-button').style.display = 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const sentenceBox = document.getElementById('sentence-box');
+            sentenceBox.addEventListener('dragover', allowDrop);
+            sentenceBox.addEventListener('drop', drop);
+            
+            document.getElementById('game-area').addEventListener('dragover', allowDrop);
+            document.getElementById('game-area').addEventListener('drop', drop);
+
+            document.getElementById('start-game').addEventListener('click', startGame);
+            document.getElementById('check-button').addEventListener('click', checkSentence);
+        });
+    </script>
+</body>
+</html>
