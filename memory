@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chinese Character Memory Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            text-align: center;
+        }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .card {
+            width: 100px;
+            height: 100px;
+            background-color: #3498db;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .card.flipped {
+            background-color: #2ecc71;
+        }
+        #characterInput {
+            margin: 10px 0;
+            padding: 5px;
+            font-size: 16px;
+        }
+        #startButton {
+            margin: 10px 0;
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Chinese Character Memory Game</h1>
+        <input type="text" id="characterInput" placeholder="Enter characters (e.g., 你好我是)">
+        <button id="startButton">Start Game</button>
+        <div class="game-board" id="gameBoard"></div>
+    </div>
+
+    <script>
+        let characters = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function createGameBoard() {
+            const gameBoard = document.getElementById('gameBoard');
+            gameBoard.innerHTML = ''; // Clear existing board
+            shuffleArray(characters);
+
+            characters.forEach((char, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.index = index;
+                card.addEventListener('click', flipCard);
+                gameBoard.appendChild(card);
+            });
+        }
+
+        function flipCard() {
+            if (flippedCards.length < 2 && !this.classList.contains('flipped')) {
+                this.textContent = characters[this.dataset.index];
+                this.classList.add('flipped');
+                flippedCards.push(this);
+
+                if (flippedCards.length === 2) {
+                    setTimeout(checkMatch, 500);
+                }
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            const match = characters[card1.dataset.index] === characters[card2.dataset.index];
+
+            if (match) {
+                matchedPairs++;
+                if (matchedPairs === characters.length / 2) {
+                    alert('Congratulations! You won!');
+                }
+            } else {
+                card1.textContent = '';
+                card2.textContent = '';
+                card1.classList.remove('flipped');
+                card2.classList.remove('flipped');
+            }
+
+            flippedCards = [];
+        }
+
+        function startGame() {
+            const input = document.getElementById('characterInput').value.trim();
+            if (input.length < 2) {
+                alert('Please enter at least 2 characters.');
+                return;
+            }
+
+            characters = Array.from(input);
+            characters = characters.concat(characters); // Duplicate characters for pairs
+            shuffleArray(characters);
+
+            matchedPairs = 0;
+            createGameBoard();
+        }
+
+        document.getElementById('startButton').addEventListener('click', startGame);
+    </script>
+</body>
+</html>
