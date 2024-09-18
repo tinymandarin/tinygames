@@ -47,7 +47,7 @@
             align-items: center;
             font-size: 24px;
             margin: 5px;
-            cursor: move;
+            cursor: pointer;
             user-select: none;
         }
         button {
@@ -118,29 +118,17 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.textContent = char;
-                card.draggable = true;
-                card.addEventListener('dragstart', dragStart);
+                card.onclick = () => moveCard(card, 'sentence');
                 gameArea.appendChild(card);
             });
         }
 
-        function dragStart(e) {
-            e.dataTransfer.setData('text/plain', e.target.id);
-        }
-
-        function allowDrop(e) {
-            e.preventDefault();
-        }
-
-        function drop(e) {
-            e.preventDefault();
-            const data = e.dataTransfer.getData('text');
-            const draggedElement = document.getElementById(data);
-            if (e.target.className === 'card') {
-                e.target.parentNode.insertBefore(draggedElement, e.target.nextSibling);
-            } else {
-                e.target.appendChild(draggedElement);
-            }
+        function moveCard(card, from) {
+            const targetBox = from === 'game' ? document.getElementById('sentence-box') : document.getElementById('game-area');
+            const cloneCard = card.cloneNode(true);
+            cloneCard.onclick = () => moveCard(cloneCard, from === 'game' ? 'sentence' : 'game');
+            targetBox.appendChild(cloneCard);
+            card.remove();
         }
 
         function checkSentence() {
@@ -172,13 +160,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const sentenceBox = document.getElementById('sentence-box');
-            sentenceBox.addEventListener('dragover', allowDrop);
-            sentenceBox.addEventListener('drop', drop);
-            
-            document.getElementById('game-area').addEventListener('dragover', allowDrop);
-            document.getElementById('game-area').addEventListener('drop', drop);
-
             document.getElementById('start-game').addEventListener('click', startGame);
             document.getElementById('check-button').addEventListener('click', checkSentence);
         });
